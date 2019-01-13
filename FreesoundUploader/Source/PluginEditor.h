@@ -25,10 +25,10 @@ public:
 		AudioFormatManager& formatManager,
 		AudioThumbnailCache& cache,
 		std::shared_ptr<String> incomingTextToDisplay)
-		:	thumbnail(sourceSamplesPerThumbnailSample, formatManager, cache)
-			//textToDisplay(incomingTextToDisplay)
+		:	thumbnail(sourceSamplesPerThumbnailSample, formatManager, cache),
+			textToDisplay(move(incomingTextToDisplay))
 	{
-		textToDisplay = NULL;
+		//textToDisplay = NULL;
 		thumbnail.addChangeListener(this);
 	}
 
@@ -93,7 +93,7 @@ class SimplePositionOverlay :	public Component,
 public:
 	SimplePositionOverlay(AudioTransportSource& transportSourceToUse, std::shared_ptr<String> textDisplayed)
 		:	transportSource(transportSourceToUse),
-			textEdit(textDisplayed)
+			textEdit(move(textDisplayed))
 	{
 		//textEdit = textDisplayed;
 		startTimer(40);	
@@ -275,10 +275,10 @@ private:
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
 	AudioTransportSource transportSource;
 	TransportState state;
+	std::shared_ptr<String> textToDisplay;
 	AudioThumbnailCache thumbnailCache;
 	SimpleThumbnailComponent thumbnailComp;
 	SimplePositionOverlay positionOverlay;
-	std::shared_ptr<String> textToDisplay;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FreesoundUploaderAudioProcessorEditor)
 };

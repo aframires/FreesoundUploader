@@ -15,10 +15,10 @@
 FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor (FreesoundUploaderAudioProcessor& p)
     :	AudioProcessorEditor (&p), processor (p),
 		state(Stopped),
-		thumbnailCache(5),
 		textToDisplay(std::make_shared<String>("Drop Audio Here!")),
-		thumbnailComp(512, formatManager, thumbnailCache,NULL),
-		positionOverlay(transportSource,NULL)
+		thumbnailCache(5),
+		thumbnailComp(512, formatManager, thumbnailCache,textToDisplay),
+		positionOverlay(transportSource,textToDisplay)
 {
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("Play");
