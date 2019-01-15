@@ -139,8 +139,7 @@ public:
 	{
 
 		if(files.size() == 1){
-			//Confirm here that the type of file is the desired one. 
-			//See how to send the error messages to the thumbnail viewer
+			if(files[0].endsWith(".mp3") || files[0].endsWith(".flac") || files[0].endsWith(".fla") || files[0].endsWith(".ogg") || files[0].endsWith(".aiff") || files[0].endsWith(".aif") || files[0].endsWith(".wav"))
 			return true;
 		}
 		return false;
