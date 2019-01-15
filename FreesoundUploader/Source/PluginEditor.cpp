@@ -12,13 +12,12 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor (FreesoundUploaderAudioProcessor& p)
-    :	AudioProcessorEditor (&p), processor (p),
-		state(Stopped),
-		textToDisplay(std::make_shared<String>("Drop Audio Here!")),
-		thumbnailCache(5),
-		thumbnailComp(512, formatManager, thumbnailCache,textToDisplay),
-		positionOverlay(transportSource,textToDisplay)
+FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(FreesoundUploaderAudioProcessor& p)
+	: AudioProcessorEditor(&p), processor(p),
+	state(Stopped),
+	thumbnailCache(5),
+	thumbnailComp(512, formatManager, thumbnailCache),
+	positionOverlay(transportSource)
 {
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("Play");
@@ -33,20 +32,15 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor (Fr
 	stopButton.setColour(TextButton::buttonColourId, Colours::red);
 	stopButton.setEnabled(false);
 
-	//textToDisplay = std::make_shared<String>("Drop Audio Here!");
-	//thumbnailComp = new SimpleThumbnailComponent(512, formatManager, thumbnailCache, textToDisplay);
-	//positionOverlay = new SimplePositionOverlay(transportSource, textToDisplay);
+	positionOverlay.setOnDropCallback([this](File inputFile) {fileDropped(inputFile); });
 
 	addAndMakeVisible(&thumbnailComp);
 	addAndMakeVisible(&positionOverlay);
 
-    setSize (600, 400);
+	setSize(600, 400);
 
 	formatManager.registerBasicFormats();
 	transportSource.addChangeListener(this);
-
-
-
 
 	//setAudioChannels(2, 2);
 }
@@ -54,20 +48,19 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor (Fr
 FreesoundUploaderAudioProcessorEditor::~FreesoundUploaderAudioProcessorEditor()
 {
 }
-
 //==============================================================================
-void FreesoundUploaderAudioProcessorEditor::paint (Graphics& g)
+void FreesoundUploaderAudioProcessorEditor::paint(Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+	// (Our component is opaque, so we must completely fill the background with a solid colour)
+	g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
 
-    g.setColour (Colours::white);
+	g.setColour(Colours::white);
 }
 
 void FreesoundUploaderAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+	// This is generally where you'll want to lay out the positions of any
+	// subcomponents in your editor..
 
 	playButton.setBounds(10, 40, getWidth() - 20, 20);
 	stopButton.setBounds(10, 70, getWidth() - 20, 20);
@@ -81,4 +74,9 @@ void FreesoundUploaderAudioProcessorEditor::changeListenerCallback(ChangeBroadca
 {
 	if (source == &transportSource)
 		transportSourceChanged();
+}
+
+void FreesoundUploaderAudioProcessorEditor::fileDropped(File newDroppedFile) {
+	droppedFile = newDroppedFile;
+	audioDropped();
 }

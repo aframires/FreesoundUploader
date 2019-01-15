@@ -14,8 +14,8 @@
 #include "PluginProcessor.h"
 
 //==============================================================================
-/**
-*/
+
+typedef std::function<void (File)> DroppedComponentCallback;
 
 class SimpleThumbnailComponent : public Component,
 	private ChangeListener
@@ -23,12 +23,10 @@ class SimpleThumbnailComponent : public Component,
 public:
 	SimpleThumbnailComponent(int sourceSamplesPerThumbnailSample,
 		AudioFormatManager& formatManager,
-		AudioThumbnailCache& cache,
-		std::shared_ptr<String> incomingTextToDisplay)
+		AudioThumbnailCache& cache)
 		:	thumbnail(sourceSamplesPerThumbnailSample, formatManager, cache),
-			textToDisplay(move(incomingTextToDisplay))
+		textToDisplay()
 	{
-		//textToDisplay = NULL;
 		thumbnail.addChangeListener(this);
 	}
 
@@ -47,19 +45,23 @@ public:
 
 	void paintIfNoFileLoaded(Graphics& g)
 	{
-		g.fillAll(Colours::white);
+		g.fillAll(Colours::darkgrey);
 		g.setColour(Colours::darkgrey);
-		if(textToDisplay != NULL)
-		{
-		g.drawFittedText(*textToDisplay, getLocalBounds(), Justification::centred, 1.0f);
+
+		//Just works for debug and for displaying errors maybe
+		if(textToDisplay.isNotEmpty()){
+			g.drawFittedText(textToDisplay, getLocalBounds(), Justification::centred, 1.0f);
+		}
+		if (textToDisplay.isEmpty()) {
+			g.drawFittedText("Drop Audio File Here!", getLocalBounds(), Justification::centred, 1.0f);
 		}
 	}
 
 	void paintIfFileLoaded(Graphics& g)
 	{
-		g.fillAll(Colours::white);
+		g.fillAll(Colours::darkgrey);
 
-		g.setColour(Colours::red);
+		g.setColour(Colours::lightgrey);
 		thumbnail.drawChannels(g, getLocalBounds(), 0.0, thumbnail.getTotalLength(), 1.0f);
 
 	}
@@ -70,6 +72,9 @@ public:
 			thumbnailChanged();
 	}
 
+	void setText(String newText) { textToDisplay = newText; }
+
+
 
 private:
 	void thumbnailChanged()
@@ -78,7 +83,7 @@ private:
 	}
 
 	AudioThumbnail thumbnail;
-	std::shared_ptr<String> textToDisplay;
+	String textToDisplay;
 
 
 
@@ -91,11 +96,9 @@ class SimplePositionOverlay :	public Component,
 
 {
 public:
-	SimplePositionOverlay(AudioTransportSource& transportSourceToUse, std::shared_ptr<String> textDisplayed)
-		:	transportSource(transportSourceToUse),
-			textEdit(move(textDisplayed))
+	SimplePositionOverlay(AudioTransportSource& transportSourceToUse)
+		:	transportSource(transportSourceToUse)
 	{
-		//textEdit = textDisplayed;
 		startTimer(40);	
 	}
 
@@ -136,9 +139,9 @@ public:
 	{
 
 		if(files.size() == 1){
-			//Confirm here that the type of file is the desired one. 
-			//See how to send the error messages to the thumbnail viewer
-			return true;
+			if(files[0].endsWith(".mp3") || files[0].endsWith(".flac") || files[0].endsWith(".fla") || files[0].endsWith(".ogg") || files[0].endsWith(".aiff") || files[0].endsWith(".aif") || files[0].endsWith(".wav")){
+				return true;
+			}
 		}
 		return false;
 	}
@@ -163,11 +166,13 @@ public:
 	{
 
 		File droppedFile = files[0];
-		*textEdit = files[0];
+		onDropCallback(droppedFile);
 
 		somethingIsBeingDraggedOver = false;
 		repaint();
 	}
+
+	void setOnDropCallback(DroppedComponentCallback cb) { onDropCallback = cb; }
 
 private:
 	void timerCallback() override
@@ -176,8 +181,8 @@ private:
 	}
 
 	AudioTransportSource& transportSource;
+	DroppedComponentCallback onDropCallback;
 	bool somethingIsBeingDraggedOver = false;
-	std::shared_ptr<String> textEdit;
 
 
 
@@ -188,6 +193,7 @@ class FreesoundUploaderAudioProcessorEditor : public AudioProcessorEditor,
 	public ChangeListener
 {
 public:
+
 	FreesoundUploaderAudioProcessorEditor(FreesoundUploaderAudioProcessor&);
 	~FreesoundUploaderAudioProcessorEditor();
 
@@ -195,12 +201,11 @@ public:
 	void paint(Graphics&) override;
 	void resized() override;
 	void changeListenerCallback(ChangeBroadcaster*) override;
-
+	void fileDropped(File newDroppedFile);
 
 
 private:
-	// This reference is provided as a quick way for your editor to
-	// access the processor object that created it.
+
 
 
 	enum TransportState
@@ -263,8 +268,26 @@ private:
 		changeState(Stopping);
 	}
 
+	void audioDropped()
+	{
 
+		if (true) //Verify here the tipe of file added
+		{
+			File file(droppedFile);
+			auto* reader = formatManager.createReaderFor(file);
+			if (auto* reader = formatManager.createReaderFor(file))
+			{
+				std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+				transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+				playButton.setEnabled(true);
+				thumbnailComp.setFile(file);
+				readerSource.reset(newSource.release());
+			}
+		}
+	}
 
+	// This reference is provided as a quick way for your editor to
+	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
 
 
@@ -275,7 +298,7 @@ private:
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
 	AudioTransportSource transportSource;
 	TransportState state;
-	std::shared_ptr<String> textToDisplay;
+	File droppedFile;
 	AudioThumbnailCache thumbnailCache;
 	SimpleThumbnailComponent thumbnailComp;
 	SimplePositionOverlay positionOverlay;
