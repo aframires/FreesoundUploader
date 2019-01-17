@@ -24,6 +24,8 @@ FreesoundUploaderAudioProcessor::FreesoundUploaderAudioProcessor()
                        )
 #endif
 {
+
+	formatManager.registerBasicFormats();
 }
 
 FreesoundUploaderAudioProcessor::~FreesoundUploaderAudioProcessor()
@@ -97,12 +99,14 @@ void FreesoundUploaderAudioProcessor::prepareToPlay (double sampleRate, int samp
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+	transportSource.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
 void FreesoundUploaderAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+	transportSource.releaseResources();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -131,7 +135,6 @@ bool FreesoundUploaderAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 
 void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
@@ -152,10 +155,18 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+		if (readerSource.get() == nullptr)
+		{
+			buffer.clear(channel, 0, buffer.getNumSamples());
+			return;
+		}
+
+
         auto* channelData = buffer.getWritePointer (channel);
 
-        // ..do something to the data...
-    }
+		//COPY THE BUFFER HERE
+		//channelData = transportSource.buffer
+	}
 }
 
 //==============================================================================
@@ -182,6 +193,23 @@ void FreesoundUploaderAudioProcessor::setStateInformation (const void* data, int
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+int FreesoundUploaderAudioProcessor::audioDropped(File droppedAudio)
+{
+	File file(droppedAudio);
+	auto* reader = formatManager.createReaderFor(file);
+	if (auto* reader = formatManager.createReaderFor(file))
+	{
+		std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+		transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+		readerSource.reset(newSource.release());
+		return (1);
+	}
+	else { return(0); }
+
+}
+
+
 
 //==============================================================================
 // This creates new instances of the plugin..
