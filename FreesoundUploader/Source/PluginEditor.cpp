@@ -72,8 +72,17 @@ void FreesoundUploaderAudioProcessorEditor::resized()
 
 void FreesoundUploaderAudioProcessorEditor::changeListenerCallback(ChangeBroadcaster* source)
 {
-	if (source == &processor.transportSource)
-		transportSourceChanged();
+	if (source == &processor.transportSource) {
+
+		if (processor.transportSource.isPlaying())
+			changeState(Playing);
+		else if ((state == Stopping) || (state == Playing))
+			changeState(Stopped);
+		else if (Pausing == state)
+			changeState(Paused);
+
+	}
+
 }
 
 void FreesoundUploaderAudioProcessorEditor::fileDropped(File newDroppedFile) {

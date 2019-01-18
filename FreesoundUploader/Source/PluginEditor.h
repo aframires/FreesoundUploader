@@ -213,6 +213,8 @@ private:
 		Stopped,
 		Starting,
 		Playing,
+		Pausing,
+		Paused,
 		Stopping
 	};
 
@@ -225,18 +227,28 @@ private:
 			switch (state)
 			{
 			case Stopped:
+				playButton.setButtonText("Play");
+				stopButton.setButtonText("Stop");
 				stopButton.setEnabled(false);
-				playButton.setEnabled(true);
 				processor.transportSource.setPosition(0.0);
 				break;
 
 			case Starting:
-				playButton.setEnabled(false);
 				processor.transportSource.start();
 				break;
 
 			case Playing:
+				playButton.setButtonText("Pause");
+				stopButton.setButtonText("Stop");
 				stopButton.setEnabled(true);
+				break;
+
+			case Pausing:
+				processor.transportSource.stop();
+				break;
+			case Paused:
+				playButton.setButtonText("Resume");
+				stopButton.setButtonText("Return to Zero");
 				break;
 
 			case Stopping:
@@ -260,12 +272,18 @@ private:
 
 	void playButtonClicked()
 	{
-		changeState(Starting);
+		if ((state == Stopped) || (state == Paused))
+			changeState(Starting);
+		else if (state == Playing)
+			changeState(Pausing);
 	}
 
 	void stopButtonClicked()
 	{
-		changeState(Stopping);
+		if (state == Paused)
+			changeState(Stopped);
+		else
+			changeState(Stopping);
 	}
 
 	void audioDropped()
