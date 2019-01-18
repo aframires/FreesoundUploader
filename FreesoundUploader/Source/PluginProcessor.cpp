@@ -166,6 +166,7 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
 
 		//COPY THE BUFFER HERE
 		//channelData = transportSource.buffer
+		transportSource.getNextAudioBlock(AudioSourceChannelInfo(buffer));
 	}
 }
 
