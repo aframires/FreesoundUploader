@@ -30,6 +30,7 @@ FreesoundUploaderAudioProcessor::FreesoundUploaderAudioProcessor()
 
 FreesoundUploaderAudioProcessor::~FreesoundUploaderAudioProcessor()
 {
+	readerSource.release();
 }
 
 //==============================================================================
@@ -133,10 +134,16 @@ bool FreesoundUploaderAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 }
 #endif
 
+
+
 void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+	int totalNumInputChannels = 0;
+	if (readerSource.get() != nullptr) { totalNumInputChannels = 2; }
+    
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+	transportSource.getNextAudioBlock(AudioSourceChannelInfo(buffer));
+
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -144,8 +151,8 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    //for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    //  buffer.clear (i, 0, buffer.getNumSamples());
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -166,7 +173,9 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
 
 		//COPY THE BUFFER HERE
 		//channelData = transportSource.buffer
-		transportSource.getNextAudioBlock(AudioSourceChannelInfo(buffer));
+
+		//transportSource.getNextReadPosition
+		//buffer.copyFrom()
 	}
 }
 
