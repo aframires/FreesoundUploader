@@ -24,10 +24,13 @@ FreesoundUploaderAudioProcessor::FreesoundUploaderAudioProcessor()
                        )
 #endif
 {
+
+	formatManager.registerBasicFormats();
 }
 
 FreesoundUploaderAudioProcessor::~FreesoundUploaderAudioProcessor()
 {
+	readerSource.release();
 }
 
 //==============================================================================
@@ -97,12 +100,14 @@ void FreesoundUploaderAudioProcessor::prepareToPlay (double sampleRate, int samp
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+	transportSource.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
 void FreesoundUploaderAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+	transportSource.releaseResources();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -129,11 +134,16 @@ bool FreesoundUploaderAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 }
 #endif
 
+
+
 void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+	int totalNumInputChannels = 0;
+	if (readerSource.get() != nullptr) { totalNumInputChannels = 2; }
+    
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+	transportSource.getNextAudioBlock(AudioSourceChannelInfo(buffer));
+
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -141,8 +151,8 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    //for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    //  buffer.clear (i, 0, buffer.getNumSamples());
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -152,10 +162,21 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+		if (readerSource.get() == nullptr)
+		{
+			buffer.clear(channel, 0, buffer.getNumSamples());
+			return;
+		}
+
+
         auto* channelData = buffer.getWritePointer (channel);
 
-        // ..do something to the data...
-    }
+		//COPY THE BUFFER HERE
+		//channelData = transportSource.buffer
+
+		//transportSource.getNextReadPosition
+		//buffer.copyFrom()
+	}
 }
 
 //==============================================================================
@@ -182,6 +203,23 @@ void FreesoundUploaderAudioProcessor::setStateInformation (const void* data, int
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+int FreesoundUploaderAudioProcessor::audioDropped(File droppedAudio)
+{
+	File file(droppedAudio);
+	auto* reader = formatManager.createReaderFor(file);
+	if (auto* reader = formatManager.createReaderFor(file))
+	{
+		std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+		transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+		readerSource.reset(newSource.release());
+		return (1);
+	}
+	else { return(0); }
+
+}
+
+
 
 //==============================================================================
 // This creates new instances of the plugin..

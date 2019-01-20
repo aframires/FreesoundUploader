@@ -16,8 +16,8 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	: AudioProcessorEditor(&p), processor(p),
 	state(Stopped),
 	thumbnailCache(5),
-	thumbnailComp(512, formatManager, thumbnailCache),
-	positionOverlay(transportSource)
+	thumbnailComp(512, processor.formatManager, thumbnailCache),
+	positionOverlay(processor.transportSource)
 {
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("Play");
@@ -38,9 +38,9 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	addAndMakeVisible(&positionOverlay);
 
 	setSize(600, 400);
+	processor.transportSource.addChangeListener(this);
 
-	formatManager.registerBasicFormats();
-	transportSource.addChangeListener(this);
+
 
 	//setAudioChannels(2, 2);
 }
@@ -72,8 +72,17 @@ void FreesoundUploaderAudioProcessorEditor::resized()
 
 void FreesoundUploaderAudioProcessorEditor::changeListenerCallback(ChangeBroadcaster* source)
 {
-	if (source == &transportSource)
-		transportSourceChanged();
+	if (source == &processor.transportSource) {
+
+		if (processor.transportSource.isPlaying())
+			changeState(Playing);
+		else if ((state == Stopping) || (state == Playing))
+			changeState(Stopped);
+		else if (Pausing == state)
+			changeState(Paused);
+
+	}
+
 }
 
 void FreesoundUploaderAudioProcessorEditor::fileDropped(File newDroppedFile) {

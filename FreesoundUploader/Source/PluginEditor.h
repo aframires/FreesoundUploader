@@ -213,6 +213,8 @@ private:
 		Stopped,
 		Starting,
 		Playing,
+		Pausing,
+		Paused,
 		Stopping
 	};
 
@@ -225,22 +227,32 @@ private:
 			switch (state)
 			{
 			case Stopped:
+				playButton.setButtonText("Play");
+				stopButton.setButtonText("Stop");
 				stopButton.setEnabled(false);
-				playButton.setEnabled(true);
-				transportSource.setPosition(0.0);
+				processor.transportSource.setPosition(0.0);
 				break;
 
 			case Starting:
-				playButton.setEnabled(false);
-				transportSource.start();
+				processor.transportSource.start();
 				break;
 
 			case Playing:
+				playButton.setButtonText("Pause");
+				stopButton.setButtonText("Stop");
 				stopButton.setEnabled(true);
 				break;
 
+			case Pausing:
+				processor.transportSource.stop();
+				break;
+			case Paused:
+				playButton.setButtonText("Resume");
+				stopButton.setButtonText("Return to Zero");
+				break;
+
 			case Stopping:
-				transportSource.stop();
+				processor.transportSource.stop();
 				break;
 
 			default:
@@ -252,7 +264,7 @@ private:
 
 	void transportSourceChanged()
 	{
-		if (transportSource.isPlaying())
+		if (processor.transportSource.isPlaying())
 			changeState(Playing);
 		else
 			changeState(Stopped);
@@ -260,30 +272,31 @@ private:
 
 	void playButtonClicked()
 	{
-		changeState(Starting);
+		if ((state == Stopped) || (state == Paused))
+			changeState(Starting);
+		else if (state == Playing)
+			changeState(Pausing);
 	}
 
 	void stopButtonClicked()
 	{
-		changeState(Stopping);
+		if (state == Paused)
+			changeState(Stopped);
+		else
+			changeState(Stopping);
 	}
 
 	void audioDropped()
 	{
-
-		if (true) //Verify here the tipe of file added
+		int result = processor.audioDropped(droppedFile);
+		if (result == 1) 
 		{
-			File file(droppedFile);
-			auto* reader = formatManager.createReaderFor(file);
-			if (auto* reader = formatManager.createReaderFor(file))
-			{
-				std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
-				transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
-				playButton.setEnabled(true);
-				thumbnailComp.setFile(file);
-				readerSource.reset(newSource.release());
-			}
+			playButton.setEnabled(true);
+			thumbnailComp.setFile(droppedFile);
+
 		}
+		else {} //In case the processor could not create the readstream
+
 	}
 
 	// This reference is provided as a quick way for your editor to
@@ -294,9 +307,7 @@ private:
 	TextButton playButton;
 	TextButton stopButton;
 
-	AudioFormatManager formatManager;
-	std::unique_ptr<AudioFormatReaderSource> readerSource;
-	AudioTransportSource transportSource;
+
 	TransportState state;
 	File droppedFile;
 	AudioThumbnailCache thumbnailCache;

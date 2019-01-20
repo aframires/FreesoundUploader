@@ -15,7 +15,7 @@
 //==============================================================================
 /**
 */
-class FreesoundUploaderAudioProcessor  : public AudioProcessor
+class FreesoundUploaderAudioProcessor  :	public AudioProcessor
 {
 public:
     //==============================================================================
@@ -54,8 +54,16 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+	int audioDropped(File droppedAudio);
+
+	AudioFormatManager formatManager;
+	std::unique_ptr<AudioFormatReaderSource> readerSource;
+	AudioTransportSource transportSource;
+	bool hasTransportSource;
+
 
 private:
     //==============================================================================
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FreesoundUploaderAudioProcessor)
 };
