@@ -55,10 +55,10 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	cc0Button.onClick = [this] {cc0ButtonClicked(); };
 	cc0Button.setEnabled(true);
 
-	addAndMakeVisible(&atribbNCButton);
-	atribbNCButton.setButtonText("AtribNC");
-	atribbNCButton.onClick = [this] {atribbNCButtonClicked(); };
-	atribbNCButton.setEnabled(true);
+	addAndMakeVisible(&attribbNCButton);
+	attribbNCButton.setButtonText("AttribNC");
+	attribbNCButton.onClick = [this] {attribbNCButtonClicked(); };
+	attribbNCButton.setEnabled(true);
 
 	addAndMakeVisible(&attribButton);
 	attribButton.setButtonText("Attribution");
@@ -69,13 +69,27 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	nameText.setMultiLine(false);
 	nameText.setReturnKeyStartsNewLine(false);
 	nameText.setReadOnly(false);
-	nameText.setScrollbarsShown(true);
+	nameText.setScrollbarsShown(false);
 	nameText.setCaretVisible(true);
 	nameText.setPopupMenuEnabled(true);
 	nameText.setText("Name");
 
+	addAndMakeVisible(&tagsText);
+	tagsText.setMultiLine(false);
+	tagsText.setReturnKeyStartsNewLine(false);
+	tagsText.setReadOnly(false);
+	tagsText.setScrollbarsShown(false);
+	tagsText.setCaretVisible(true);
+	tagsText.setPopupMenuEnabled(true);
 	tagsText.setText("Tags");
-	
+
+	addAndMakeVisible(&descriptionText);
+	descriptionText.setMultiLine(true);
+	descriptionText.setReturnKeyStartsNewLine(true);
+	descriptionText.setReadOnly(false);
+	descriptionText.setScrollbarsShown(true);
+	descriptionText.setCaretVisible(true);
+	descriptionText.setPopupMenuEnabled(true);
 	descriptionText.setText("Description of the sound");
 
 
@@ -85,7 +99,7 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	addAndMakeVisible(&thumbnailComp);
 	addAndMakeVisible(&positionOverlay);
 
-	setSize(600, 800);
+	setSize(600, 600);
 	processor.transportSource.addChangeListener(this);
 
 
