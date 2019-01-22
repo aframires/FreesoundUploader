@@ -32,17 +32,54 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	stopButton.setColour(TextButton::buttonColourId, Colours::red);
 	stopButton.setEnabled(false);
 
+	addAndMakeVisible(&freesoundLogo);
+	//freesoundLogo.setImages();
+	freesoundLogo.onClick = [this] {freesoundButtonClicked(); };
+	freesoundLogo.setEnabled(true);
+
+	addAndMakeVisible(&uploadButton);
+	uploadButton.setButtonText("Upload");
+	uploadButton.onClick = [this] {uploadButtonClicked(); };
+	playButton.setColour(TextButton::buttonColourId, Colours::green);
+	uploadButton.setEnabled(false);
+
+	addAndMakeVisible(&license);
+	//license.setFont(Font(15.0f, Font::plain).withTypefaceStyle("Regular"));
+	license.setJustificationType(Justification::centredLeft);
+	license.setEditable(false, false, false);
+	//license.setColour(TextEditor::textColourId, Colours::black);
+	//license.setColour(TextEditor::backgroundColourId, Colour(0x00000000));
+
+	addAndMakeVisible(&cc0Button);
+	cc0Button.setButtonText("CC0");
+	cc0Button.onClick = [this] {cc0ButtonClicked(); };
+	cc0Button.setEnabled(true);
+
+	addAndMakeVisible(&atribbNCButton);
+	atribbNCButton.setButtonText("AtribNC");
+	atribbNCButton.onClick = [this] {atribbNCButtonClicked(); };
+	atribbNCButton.setEnabled(true);
+
+	addAndMakeVisible(&attribButton);
+	attribButton.setButtonText("Attribution");
+	attribButton.onClick = [this] {attribButtonClicked(); };
+	attribButton.setEnabled(true);
+
+
+
+
+
+
 	positionOverlay.setOnDropCallback([this](File inputFile) {fileDropped(inputFile); });
 
 	addAndMakeVisible(&thumbnailComp);
 	addAndMakeVisible(&positionOverlay);
 
-	setSize(600, 400);
+	setSize(600, 800);
 	processor.transportSource.addChangeListener(this);
 
 
 
-	//setAudioChannels(2, 2);
 }
 
 FreesoundUploaderAudioProcessorEditor::~FreesoundUploaderAudioProcessorEditor()

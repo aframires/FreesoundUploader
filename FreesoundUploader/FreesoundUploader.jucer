@@ -5,6 +5,10 @@
               pluginVST3Category="Instrument">
   <MAINGROUP id="K1oVh7" name="FreesoundUploader">
     <GROUP id="{75A4A9ED-1E8D-D73F-8F59-60CDB1C12EFD}" name="Source">
+      <FILE id="lqKqu0" name="FreesoundUpload.cpp" compile="1" resource="0"
+            file="Source/FreesoundUpload.cpp"/>
+      <FILE id="YLele6" name="FreesoundUpload.h" compile="0" resource="0"
+            file="Source/FreesoundUpload.h"/>
       <FILE id="us9dvF" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="El8kiu" name="PluginProcessor.h" compile="0" resource="0"
