@@ -303,9 +303,22 @@ private:
 	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
 
+	ImageButton freesoundLogo;
 
 	TextButton playButton;
 	TextButton stopButton;
+	TextButton uploadButton;
+
+	Label license;
+	TextButton cc0Button;
+	TextButton atribbNCButton;
+	TextButton attribButton;
+
+	TextEditor nameText;
+	TextEditor tagsText;
+	TextEditor descriptionText;
+
+
 
 
 	TransportState state;

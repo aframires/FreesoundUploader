@@ -65,8 +65,18 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	attribButton.onClick = [this] {attribButtonClicked(); };
 	attribButton.setEnabled(true);
 
+	addAndMakeVisible(&nameText);
+	nameText.setMultiLine(false);
+	nameText.setReturnKeyStartsNewLine(false);
+	nameText.setReadOnly(false);
+	nameText.setScrollbarsShown(true);
+	nameText.setCaretVisible(true);
+	nameText.setPopupMenuEnabled(true);
+	nameText.setText("Name");
 
-
+	tagsText.setText("Tags");
+	
+	descriptionText.setText("Description of the sound");
 
 
 
