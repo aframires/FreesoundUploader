@@ -45,21 +45,15 @@ public:
 
 	void paintIfNoFileLoaded(Graphics& g)
 	{
-		g.fillAll(Colours::darkgrey);
-		g.setColour(Colours::darkgrey);
+		g.setColour(Colours::white);
+		g.setFont(17.0f);
+		g.drawFittedText("Drop Audio File Here", getLocalBounds(), Justification::centred, 1.0f);
 
-		//Just works for debug and for displaying errors maybe
-		if(textToDisplay.isNotEmpty()){
-			g.drawFittedText(textToDisplay, getLocalBounds(), Justification::centred, 1.0f);
-		}
-		if (textToDisplay.isEmpty()) {
-			g.drawFittedText("Drop Audio File Here!", getLocalBounds(), Justification::centred, 1.0f);
-		}
 	}
 
 	void paintIfFileLoaded(Graphics& g)
 	{
-		g.fillAll(Colours::darkgrey);
+		//g.fillAll(Colours::darkgrey);
 
 		g.setColour(Colours::lightgrey);
 		thumbnail.drawChannels(g, getLocalBounds(), 0.0, thumbnail.getTotalLength(), 1.0f);
@@ -299,15 +293,53 @@ private:
 
 	}
 
+	void freesoundButtonClicked() {
+		//do Login or Logout
+		return;
+	}
+
+	void uploadButtonClicked() {
+		//verify here if everything was changed
+		return;
+	}
+
+	void cc0ButtonClicked() {
+		//set the other buttons to off and this to on
+		return;
+	}
+
+	void attribNCButtonClicked() {
+		//set the other buttons to off and this to on
+		return;
+	}
+
+	void attribButtonClicked() {
+		//set the other buttons to off and this to on
+		return;
+	}
+
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
 
+	ImageButton freesoundLogo;
 
 	TextButton playButton;
 	TextButton stopButton;
+	TextButton uploadButton;
+
+	Label license;
+	TextButton cc0Button;
+	TextButton attribNCButton;
+	TextButton attribButton;
+
+	TextEditor nameText;
+	TextEditor tagsText;
+	TextEditor descriptionText;
 
 
+
+	Image fsImg;
 	TransportState state;
 	File droppedFile;
 	AudioThumbnailCache thumbnailCache;
