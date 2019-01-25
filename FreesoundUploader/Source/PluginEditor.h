@@ -45,21 +45,15 @@ public:
 
 	void paintIfNoFileLoaded(Graphics& g)
 	{
-		g.fillAll(Colours::darkgrey);
-		g.setColour(Colours::darkgrey);
+		g.setColour(Colours::white);
+		g.setFont(17.0f);
+		g.drawFittedText("Drop Audio File Here", getLocalBounds(), Justification::centred, 1.0f);
 
-		//Just works for debug and for displaying errors maybe
-		if(textToDisplay.isNotEmpty()){
-			g.drawFittedText(textToDisplay, getLocalBounds(), Justification::centred, 1.0f);
-		}
-		if (textToDisplay.isEmpty()) {
-			g.drawFittedText("Drop Audio File Here!", getLocalBounds(), Justification::centred, 1.0f);
-		}
 	}
 
 	void paintIfFileLoaded(Graphics& g)
 	{
-		g.fillAll(Colours::darkgrey);
+		//g.fillAll(Colours::darkgrey);
 
 		g.setColour(Colours::lightgrey);
 		thumbnail.drawChannels(g, getLocalBounds(), 0.0, thumbnail.getTotalLength(), 1.0f);
@@ -314,7 +308,7 @@ private:
 		return;
 	}
 
-	void attribbNCButtonClicked() {
+	void attribNCButtonClicked() {
 		//set the other buttons to off and this to on
 		return;
 	}
@@ -336,7 +330,7 @@ private:
 
 	Label license;
 	TextButton cc0Button;
-	TextButton attribbNCButton;
+	TextButton attribNCButton;
 	TextButton attribButton;
 
 	TextEditor nameText;
@@ -345,7 +339,7 @@ private:
 
 
 
-
+	Image fsImg;
 	TransportState state;
 	File droppedFile;
 	AudioThumbnailCache thumbnailCache;
