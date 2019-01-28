@@ -12,6 +12,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
+#include "FreesoundUpload.h"
 
 //==============================================================================
 
@@ -294,7 +295,11 @@ private:
 	}
 
 	void freesoundButtonClicked() {
-		//do Login or Logout
+
+		//Abrir uma nova janela
+		//
+
+
 		return;
 	}
 
@@ -321,6 +326,7 @@ private:
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
+	FreesoundAuthorization authorization;
 
 	ImageButton freesoundLogo;
 

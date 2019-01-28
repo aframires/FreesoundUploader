@@ -17,7 +17,8 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	state(Stopped),
 	thumbnailCache(5),
 	thumbnailComp(512, processor.formatManager, thumbnailCache),
-	positionOverlay(processor.transportSource)
+	positionOverlay(processor.transportSource),
+	authorization(FreesoundAuthorization("qtRxJcdBeEqAPPymT71w","xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC",))
 {
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("Play");
