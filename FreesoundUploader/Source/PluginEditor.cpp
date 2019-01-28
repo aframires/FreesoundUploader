@@ -18,7 +18,7 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	thumbnailCache(5),
 	thumbnailComp(512, processor.formatManager, thumbnailCache),
 	positionOverlay(processor.transportSource),
-	authorization(FreesoundAuthorization("qtRxJcdBeEqAPPymT71w","xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC",))
+	authorization("qtRxJcdBeEqAPPymT71w","xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC")
 {
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("Play");
@@ -56,7 +56,6 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 
 	addAndMakeVisible(&cc0Button);
 	cc0Button.setButtonText("CC0");
-	cc0Button.onClick = [this] {cc0ButtonClicked(); };
 	//cc0Button.setEnabled(true);
 	cc0Button.setClickingTogglesState(true);
 	cc0Button.setRadioGroupId(12345);
@@ -65,14 +64,12 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 
 	addAndMakeVisible(&attribNCButton);
 	attribNCButton.setButtonText("Attribution Non Commercial");
-	attribNCButton.onClick = [this] {attribNCButtonClicked(); };
 	//attribNCButton.setEnabled(false);
 	attribNCButton.setClickingTogglesState(true);
 	attribNCButton.setRadioGroupId(12345);
 
 	addAndMakeVisible(&attribButton);
 	attribButton.setButtonText("Attribution");
-	attribButton.onClick = [this] {attribButtonClicked(); };
 	//attribButton.setEnabled(false);
 	attribButton.setClickingTogglesState(true);
 	attribButton.setRadioGroupId(12345);
@@ -109,6 +106,7 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 
 
 	positionOverlay.setOnDropCallback([this](File inputFile) {fileDropped(inputFile); });
+	authorization.setAuthCallback([this] {authFinished(); });
 
 	addAndMakeVisible(&thumbnailComp);
 	addAndMakeVisible(&positionOverlay);

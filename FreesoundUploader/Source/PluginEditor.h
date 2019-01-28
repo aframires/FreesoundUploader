@@ -293,40 +293,53 @@ private:
 		else {} //In case the processor could not create the readstream
 
 	}
-
-	void freesoundButtonClicked() {
-
-		//Abrir uma nova janela
-		//
-
-
-		return;
-	}
-
+	
 	void uploadButtonClicked() {
 		//verify here if everything was changed
 		return;
 	}
 
-	void cc0ButtonClicked() {
-		//set the other buttons to off and this to on
+	void freesoundButtonClicked() {
+
+		//Abrir uma nova janela
+		authorization.addToDesktop(ComponentPeer::windowIsTemporary);
+		Rectangle<int> area(0, 0, 200, 200);
+
+		RectanglePlacement placement(RectanglePlacement::xLeft
+			| RectanglePlacement::yBottom
+			| RectanglePlacement::doNotResize);
+
+		auto result = placement.appliedTo(area, Desktop::getInstance().getDisplays()
+			.getMainDisplay().userArea.reduced(20));
+		authorization.setBounds(result);
+
+		authorization.setVisible(true);
+
 		return;
 	}
 
-	void attribNCButtonClicked() {
-		//set the other buttons to off and this to on
-		return;
+	void authFinished() {
+
+		authorization.setVisible(false);
+
+		URL url = "https://freesound.org/apiv2/oauth2/access_token/";
+		String post = "client_id=" + authorization.getClientID() + "&client_secret=" + authorization.getClientSecret() + "&grant_type=authorization_code&code=" + authorization.getAuthCode();
+		std::unique_ptr<FreesoundRequest> authReq(new FreesoundRequest(url, post, authorization));
+		
+		authReq->setResponseCallback([this](String responseIn) {authRespCallback(responseIn); });
+		descriptionText.setText(response);
 	}
 
-	void attribButtonClicked() {
-		//set the other buttons to off and this to on
-		return;
+	void authRespCallback(String inString) {
+		response = inString;
 	}
 
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
 	FreesoundAuthorization authorization;
+
+	String response;
 
 	ImageButton freesoundLogo;
 

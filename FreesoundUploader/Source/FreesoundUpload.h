@@ -30,16 +30,15 @@ typedef std::function<void(String)> ResponseCallback;
 
 class FreesoundAuthorization : public WebBrowserComponent
 {
-	FreesoundAuthorization(String inClientID, String inClientSecret, AuthorizationCallback cb)
+public:
+	FreesoundAuthorization(String inClientID, String inClientSecret)
 		:	clientID(inClientID),
 			clientSecret(inClientSecret),
-			authCode(),
-			callBack(cb)
+			authCode()	
 	{
 	}
 
 	~FreesoundAuthorization() {
-
 	}
 
 	bool startLogin() {
@@ -70,6 +69,8 @@ class FreesoundAuthorization : public WebBrowserComponent
 	void setAccessToken(String inAccToken) {
 		accessToken = inAccToken;
 	}
+
+	void setAuthCallback(AuthorizationCallback cb) { callBack = cb; }
 
 
 private:
@@ -107,20 +108,21 @@ private:
 };
 
 //url = https://freesound.org/apiv2/oauth2/access_token/
-//String POSTData = "client_id=" + authorization.getClientID() + "&client_secret=" + authorization.getClientSecret() + "&grant_type=authorization_code&code=" + getAuthCode();
+//String POSTData = "client_id=" + authorization.getClientID() + "&client_secret=" + authorization.getClientSecret() + "&grant_type=authorization_code&code=" + authorization.getAuthCode();
 
 
-class FreesoundUpload : private Thread
+class FreesoundRequest : private Thread
 {
 public:
-	FreesoundUpload(URL url, String POSTData, FreesoundAuthorization &auth, ResponseCallback cb)
+	FreesoundRequest(URL url, String POSTData, FreesoundAuthorization &auth)
 		: Thread("FreesoundUpload"),
 		requestedCall(url),
 		authorization(auth),
-		POST(POSTData),
-		callBack(cb)
+		POST(POSTData)
 	{
 	}
+
+	~FreesoundRequest(){}
 
 	void run() override
 	{
@@ -128,6 +130,8 @@ public:
 		if (callBack != nullptr) { callBack(result); }
 
 	}
+
+	void setResponseCallback(ResponseCallback cb) { callBack = cb; }
 
 private:
 
