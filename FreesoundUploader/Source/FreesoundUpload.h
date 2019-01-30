@@ -35,7 +35,8 @@ public:
 		: Thread("FreesoundUpload"),
 		requestedCall(url),
 		POST(POSTData),
-		accessToken(inAccessToken)
+		accessToken(inAccessToken),
+		logger(String("F:\FSRequest.txt"), String())
 	{
 	}
 
@@ -63,11 +64,22 @@ public:
 		requestedCall = requestedCall.withPOSTData(POST);
 		String headers;
 		if (accessToken.isNotEmpty()) { headers = "Authorization: Bearer " + accessToken; }
+
+		logger.writeToLog("Response Headers: " + headers);
+		logger.writeToLog("url = " + requestedCall.toString(true));
+
+
 		if (auto stream = std::unique_ptr<InputStream>(requestedCall.createInputStream(true, nullptr, nullptr, headers,
 			10000, // timeout in millisecs
 			&responseHeaders, &statusCode)))
 		{
-			return Response(statusCode, stream->readEntireStreamAsString());
+			String resp = stream->readEntireStreamAsString();
+			logger.writeToLog((statusCode != 0 ? "Status code: " + String(statusCode) + newLine : String())
+				+ "Response headers: " + newLine
+				+ responseHeaders.getDescription() + newLine
+				+ "----------------------------------------------------" + newLine
+				+ resp);
+			return Response(statusCode, resp);
 		}
 
 		return Response(-1, String());
@@ -82,6 +94,7 @@ private:
 	String POST;
 	ResponseCallback callBack;
 	String accessToken;
+	FileLogger logger;
 
 
 

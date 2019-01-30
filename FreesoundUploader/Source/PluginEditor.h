@@ -309,6 +309,8 @@ private:
 	
 	void uploadButtonClicked() {
 		
+		//Fazer set dos parameters usando a funçao
+
 		String license;
 		if (cc0Button.getToggleState()) { license = "Creative Commons 0"; }
 		if (attribNCButton.getToggleState()) { license = "Attribution Noncommercial"; }
