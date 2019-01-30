@@ -318,22 +318,25 @@ private:
 		
 		URL url = "https://freesound.org/apiv2/sounds/upload/";
 
-		url = url.withPOSTData("name=\"" + nameText.getText() + "\"&tags=\"" + tagsText.getText() + "\"&description=\"" + descriptionText.getText() + "\"&license=\"" + license + "\"");
+		//url = url.withPOSTData("name=\"" + nameText.getText() + "\"&tags=\"" + tagsText.getText() + "\"&description=\"" + descriptionText.getText() + "\"&license=\"" + license + "\"");
+		
+		url = url.withParameter("name", nameText.getText());
+		url = url.withParameter("tags", tagsText.getText());
+		url = url.withParameter("description", descriptionText.getText());
+		url = url.withParameter("license", license);
+
+		
 		url = url.withFileToUpload("audiofile", droppedFile, "audio/*");
 
 
 
-		FreesoundRequest uploadSound(url, String(), accToken);
+		FreesoundRequest uploadSound(url, String(), authorization.getAccessToken());
 
 		Response incoming = uploadSound.makeRequest();
-		if (incoming.first == 200) {
+		if (incoming.first >= 200 && incoming.first < 300) {
 			var answer = JSON::fromString(incoming.second);
-
+			uploadButton.setColour(TextButton::buttonColourId, Colours::green);
 		}
-
-		
-		
-		
 		return;
 	}
 
@@ -369,7 +372,6 @@ private:
 	FreesoundUploaderAudioProcessor& processor;
 	FreesoundAuthorization authorization;
 
-	String accToken;
 	bool authFlag = false;
 	bool hasAudio = false;
 
