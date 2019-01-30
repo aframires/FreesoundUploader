@@ -12,6 +12,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
+#include "FreesoundUpload.h"
 
 //==============================================================================
 
@@ -200,7 +201,18 @@ public:
 
 private:
 
+	void checkIfReadyForUpload() {
+		if (playButton.isEnabled() && //if File is dropped
+			!tagsText.isEmpty() &&
+			!nameText.isEmpty() &&
+			!descriptionText.isEmpty() &&
+			authFlag) 
+		{
+			uploadButton.setEnabled(true);
+		}
 
+
+	}
 
 	enum TransportState
 	{
@@ -285,42 +297,83 @@ private:
 		int result = processor.audioDropped(droppedFile);
 		if (result == 1) 
 		{
-			playButton.setEnabled(true);
+			hasAudio = true;
 			thumbnailComp.setFile(droppedFile);
+			playButton.setEnabled(true);
+
 
 		}
 		else {} //In case the processor could not create the readstream
 
 	}
+	
+	void uploadButtonClicked() {
+		
+		//Fazer set dos parameters usando a funçao
+
+		String license;
+		if (cc0Button.getToggleState()) { license = "Creative Commons 0"; }
+		if (attribNCButton.getToggleState()) { license = "Attribution Noncommercial"; }
+		if (attribButton.getToggleState()) { license = "Attribution"; }
+		
+		URL url = "https://freesound.org/apiv2/sounds/upload/";
+
+		//url = url.withPOSTData("name=\"" + nameText.getText() + "\"&tags=\"" + tagsText.getText() + "\"&description=\"" + descriptionText.getText() + "\"&license=\"" + license + "\"");
+		
+		url = url.withParameter("name", nameText.getText());
+		url = url.withParameter("tags", tagsText.getText());
+		url = url.withParameter("description", descriptionText.getText());
+		url = url.withParameter("license", license);
+
+		
+		url = url.withFileToUpload("audiofile", droppedFile, "audio/*");
+
+
+
+		FreesoundRequest uploadSound(url, String(), authorization.getAccessToken());
+
+		Response incoming = uploadSound.makeRequest();
+		if (incoming.first >= 200 && incoming.first < 300) {
+			var answer = JSON::fromString(incoming.second);
+			uploadButton.setColour(TextButton::buttonColourId, Colours::green);
+		}
+		return;
+	}
 
 	void freesoundButtonClicked() {
-		//do Login or Logout
+
+		//Abrir uma nova janela
+		//authorization.addToDesktop(ComponentPeer::windowIsTemporary);
+
+		RectanglePlacement placement(RectanglePlacement::xLeft
+			| RectanglePlacement::yBottom
+			| RectanglePlacement::doNotResize);
+
+
+		authorization.setBounds(getLocalBounds());
+		authorization.startLogin();
+		addAndMakeVisible(authorization);
+
 		return;
 	}
 
-	void uploadButtonClicked() {
-		//verify here if everything was changed
-		return;
+	void authFinished() {
+
+		authorization.setVisible(false);
+
+		int statusCode = authorization.codeExchange();
+		if (statusCode == 200) { authFlag = true; }
+
 	}
 
-	void cc0ButtonClicked() {
-		//set the other buttons to off and this to on
-		return;
-	}
-
-	void attribNCButtonClicked() {
-		//set the other buttons to off and this to on
-		return;
-	}
-
-	void attribButtonClicked() {
-		//set the other buttons to off and this to on
-		return;
-	}
 
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
+	FreesoundAuthorization authorization;
+
+	bool authFlag = false;
+	bool hasAudio = false;
 
 	ImageButton freesoundLogo;
 

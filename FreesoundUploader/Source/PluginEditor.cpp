@@ -17,7 +17,8 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	state(Stopped),
 	thumbnailCache(5),
 	thumbnailComp(512, processor.formatManager, thumbnailCache),
-	positionOverlay(processor.transportSource)
+	positionOverlay(processor.transportSource),
+	authorization("qtRxJcdBeEqAPPymT71w","xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC")
 {
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("Play");
@@ -55,7 +56,6 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 
 	addAndMakeVisible(&cc0Button);
 	cc0Button.setButtonText("CC0");
-	cc0Button.onClick = [this] {cc0ButtonClicked(); };
 	//cc0Button.setEnabled(true);
 	cc0Button.setClickingTogglesState(true);
 	cc0Button.setRadioGroupId(12345);
@@ -64,14 +64,12 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 
 	addAndMakeVisible(&attribNCButton);
 	attribNCButton.setButtonText("Attribution Non Commercial");
-	attribNCButton.onClick = [this] {attribNCButtonClicked(); };
 	//attribNCButton.setEnabled(false);
 	attribNCButton.setClickingTogglesState(true);
 	attribNCButton.setRadioGroupId(12345);
 
 	addAndMakeVisible(&attribButton);
 	attribButton.setButtonText("Attribution");
-	attribButton.onClick = [this] {attribButtonClicked(); };
 	//attribButton.setEnabled(false);
 	attribButton.setClickingTogglesState(true);
 	attribButton.setRadioGroupId(12345);
@@ -85,6 +83,7 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	nameText.setPopupMenuEnabled(true);
 	nameText.setFont(Font(20.0f, Font::plain).withTypefaceStyle("Regular"));
 	nameText.setTextToShowWhenEmpty("Name", Colour(Colours::whitesmoke));
+	nameText.onTextChange = [this] {checkIfReadyForUpload(); };
 
 	addAndMakeVisible(&tagsText);
 	tagsText.setMultiLine(true);
@@ -95,6 +94,8 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	tagsText.setPopupMenuEnabled(true);
 	tagsText.setFont(Font(17.0f, Font::plain).withTypefaceStyle("Regular"));
 	tagsText.setTextToShowWhenEmpty("Tags",Colour(Colours::whitesmoke));
+	tagsText.onTextChange = [this] {checkIfReadyForUpload(); };
+
 
 	addAndMakeVisible(&descriptionText);
 	descriptionText.setMultiLine(true);
@@ -105,9 +106,12 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	descriptionText.setPopupMenuEnabled(true);
 	descriptionText.setFont(Font(17.0f, Font::plain).withTypefaceStyle("Regular"));
 	descriptionText.setTextToShowWhenEmpty("Description of the Sound", Colour(Colours::whitesmoke));
+	descriptionText.onTextChange = [this] {checkIfReadyForUpload(); };
 
 
-	positionOverlay.setOnDropCallback([this](File inputFile) {fileDropped(inputFile); });
+
+	positionOverlay.setOnDropCallback([this](File inputFile) {fileDropped(inputFile); checkIfReadyForUpload(); });
+	authorization.setAuthCallback([this] {authFinished(); });
 
 	addAndMakeVisible(&thumbnailComp);
 	addAndMakeVisible(&positionOverlay);
@@ -178,5 +182,13 @@ void FreesoundUploaderAudioProcessorEditor::changeListenerCallback(ChangeBroadca
 
 void FreesoundUploaderAudioProcessorEditor::fileDropped(File newDroppedFile) {
 	droppedFile = newDroppedFile;
+	
+	if(hasAudio){
+		if (state == Paused)
+			changeState(Stopped);
+		else
+			changeState(Stopping);
+	}
+
 	audioDropped();
 }
