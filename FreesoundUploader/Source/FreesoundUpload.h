@@ -23,25 +23,90 @@
 //Using this as a library, the developer has to show and hide this windows
 
 
+
+typedef std::pair<int, String> Response;
 typedef std::function<void()> AuthorizationCallback;
-typedef std::function<void(String)> ResponseCallback;
+typedef std::function<void(Response)> ResponseCallback;
+
+class FreesoundRequest : private Thread
+{
+public:
+	FreesoundRequest(URL url, String POSTData, String inAccessToken)
+		: Thread("FreesoundUpload"),
+		requestedCall(url),
+		POST(POSTData),
+		accessToken(inAccessToken)
+	{
+	}
+
+	~FreesoundRequest() {}
+
+	void run() override
+	{
+		Response result = makeRequest();
+
+		if (callBack != nullptr) { callBack(result); }
+
+		stopThread(100);
+
+	}
 
 
+
+	void setResponseCallback(ResponseCallback cb) { callBack = cb; }
+
+	Response makeRequest()
+	{
+		StringPairArray responseHeaders;
+		int statusCode = 0;
+
+		requestedCall = requestedCall.withPOSTData(POST);
+		String headers;
+		if (accessToken.isNotEmpty()) { headers = "Authorization: Bearer " + accessToken; }
+		if (auto stream = std::unique_ptr<InputStream>(requestedCall.createInputStream(true, nullptr, nullptr, headers,
+			10000, // timeout in millisecs
+			&responseHeaders, &statusCode)))
+		{
+			return Response(statusCode, stream->readEntireStreamAsString());
+		}
+
+		return Response(-1, String());
+	}
+
+
+private:
+
+
+
+	URL requestedCall;
+	String POST;
+	ResponseCallback callBack;
+	String accessToken;
+
+
+
+
+
+};
 
 class FreesoundAuthorization : public WebBrowserComponent
 {
 public:
+
+	//Still have to handle refreshToken
+
 	FreesoundAuthorization(String inClientID, String inClientSecret)
 		:	clientID(inClientID),
 			clientSecret(inClientSecret),
-			authCode()	
+			authCode(),
+			refreshToken()
 	{
 	}
 
 	~FreesoundAuthorization() {
 	}
 
-	bool startLogin() {
+	void startLogin() {
 		String loginURL = "https://freesound.org/apiv2/oauth2/authorize/?client_id=" + clientID + "&response_type=code";
 		goToURL(loginURL);
 	}
@@ -70,7 +135,25 @@ public:
 		accessToken = inAccToken;
 	}
 
+	String requestAccessToken() {
+
+	}
+
 	void setAuthCallback(AuthorizationCallback cb) { callBack = cb; }
+
+	int codeExchange() {
+		URL url = "https://freesound.org/apiv2/oauth2/access_token/";
+		String post = "client_id=" + getClientID() + "&client_secret=" + getClientSecret() + "&grant_type=authorization_code&code=" + getAuthCode();
+		FreesoundRequest askToken(url, post, String());
+		
+		Response incoming = askToken.makeRequest();
+		if (incoming.first == 200) {
+			var answer = JSON::fromString(incoming.second);
+			accessToken = answer["access_token"];
+			refreshToken = answer["refresh_token"];
+		}
+		return incoming.first;
+	}
 
 
 private:
@@ -78,9 +161,11 @@ private:
 	String clientSecret;
 	String authCode;
 	String accessToken;
+	String refreshToken;
 	AuthorizationCallback callBack;
 
 	void pageFinishedLoading(const String &url) {
+
 		//If the page we arrived is step2 of https://freesound.org/docs/api/authentication.html
 		if (url.startsWith("https://freesound.org/home/app_permissions/permission_granted/")) {
 			//exampleURL = https://freesound.org/home/app_permissions/permission_granted/?code=8zmtRwtflv6Up48QOXlHmlCTblbxth
@@ -93,7 +178,7 @@ private:
 			int codeInd = paramNames.indexOf("code", true, 0);
 			authCode = paramVals[codeInd];
 
-			//callback saying it has finished
+			callBack();
 		}
 	}
 
@@ -102,7 +187,7 @@ private:
 		goToURL(loginURL);
 	}
 
-	void codeExchange(){}
+
 
 
 };
@@ -111,68 +196,3 @@ private:
 //String POSTData = "client_id=" + authorization.getClientID() + "&client_secret=" + authorization.getClientSecret() + "&grant_type=authorization_code&code=" + authorization.getAuthCode();
 
 
-class FreesoundRequest : private Thread
-{
-public:
-	FreesoundRequest(URL url, String POSTData, FreesoundAuthorization &auth)
-		: Thread("FreesoundUpload"),
-		requestedCall(url),
-		authorization(auth),
-		POST(POSTData)
-	{
-	}
-
-	~FreesoundRequest(){}
-
-	void run() override
-	{
-		String result = getAccessToken(requestedCall, POST, authorization);
-		if (callBack != nullptr) { callBack(result); }
-
-	}
-
-	void setResponseCallback(ResponseCallback cb) { callBack = cb; }
-
-private:
-
-
-
-	URL requestedCall;
-	String POST;
-	FreesoundAuthorization &authorization;
-	ResponseCallback callBack;
-
-
-
-	String getAccessToken(URL url, const String POSTdata, FreesoundAuthorization &authorization)
-	{
-		StringPairArray responseHeaders;
-		int statusCode = 0;
-
-		url = url.withPOSTData(POSTdata);
-
-		if (auto stream = std::unique_ptr<InputStream>(url.createInputStream(true, nullptr, nullptr, {},
-			10000, // timeout in millisecs
-			&responseHeaders, &statusCode)))
-		{
-
-
-
-
-			//authorization.setAccessToken(accToken);
-
-			return (statusCode != 0 ? "Status code: " + String(statusCode) + newLine : String())
-				+ "Response headers: " + newLine
-				+ responseHeaders.getDescription() + newLine
-				+ "----------------------------------------------------" + newLine
-				+ stream->readEntireStreamAsString();
-		}
-
-		if (statusCode != 0)
-			return "Failed to connect, status code = " + String(statusCode);
-
-		return "Failed to connect!";
-	}
-
-
-};

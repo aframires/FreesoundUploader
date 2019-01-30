@@ -201,7 +201,18 @@ public:
 
 private:
 
+	void checkIfReadyForUpload() {
+		if (playButton.isEnabled() && //if File is dropped
+			!tagsText.isEmpty() &&
+			!nameText.isEmpty() &&
+			!descriptionText.isEmpty() &&
+			authFlag) 
+		{
+			uploadButton.setEnabled(true);
+		}
 
+
+	}
 
 	enum TransportState
 	{
@@ -286,8 +297,10 @@ private:
 		int result = processor.audioDropped(droppedFile);
 		if (result == 1) 
 		{
-			playButton.setEnabled(true);
+			hasAudio = true;
 			thumbnailComp.setFile(droppedFile);
+			playButton.setEnabled(true);
+
 
 		}
 		else {} //In case the processor could not create the readstream
@@ -295,25 +308,46 @@ private:
 	}
 	
 	void uploadButtonClicked() {
-		//verify here if everything was changed
+		
+		String license;
+		if (cc0Button.getToggleState()) { license = "Creative Commons 0"; }
+		if (attribNCButton.getToggleState()) { license = "Attribution Noncommercial"; }
+		if (attribButton.getToggleState()) { license = "Attribution"; }
+		
+		URL url = "https://freesound.org/apiv2/sounds/upload/";
+
+		url = url.withPOSTData("name=\"" + nameText.getText() + "\"&tags=\"" + tagsText.getText() + "\"&description=\"" + descriptionText.getText() + "\"&license=\"" + license + "\"");
+		url = url.withFileToUpload("audiofile", droppedFile, "audio/*");
+
+
+
+		FreesoundRequest uploadSound(url, String(), accToken);
+
+		Response incoming = uploadSound.makeRequest();
+		if (incoming.first == 200) {
+			var answer = JSON::fromString(incoming.second);
+
+		}
+
+		
+		
+		
 		return;
 	}
 
 	void freesoundButtonClicked() {
 
 		//Abrir uma nova janela
-		authorization.addToDesktop(ComponentPeer::windowIsTemporary);
-		Rectangle<int> area(0, 0, 200, 200);
+		//authorization.addToDesktop(ComponentPeer::windowIsTemporary);
 
 		RectanglePlacement placement(RectanglePlacement::xLeft
 			| RectanglePlacement::yBottom
 			| RectanglePlacement::doNotResize);
 
-		auto result = placement.appliedTo(area, Desktop::getInstance().getDisplays()
-			.getMainDisplay().userArea.reduced(20));
-		authorization.setBounds(result);
 
-		authorization.setVisible(true);
+		authorization.setBounds(getLocalBounds());
+		authorization.startLogin();
+		addAndMakeVisible(authorization);
 
 		return;
 	}
@@ -322,24 +356,20 @@ private:
 
 		authorization.setVisible(false);
 
-		URL url = "https://freesound.org/apiv2/oauth2/access_token/";
-		String post = "client_id=" + authorization.getClientID() + "&client_secret=" + authorization.getClientSecret() + "&grant_type=authorization_code&code=" + authorization.getAuthCode();
-		std::unique_ptr<FreesoundRequest> authReq(new FreesoundRequest(url, post, authorization));
-		
-		authReq->setResponseCallback([this](String responseIn) {authRespCallback(responseIn); });
-		descriptionText.setText(response);
+		int statusCode = authorization.codeExchange();
+		if (statusCode == 200) { authFlag = true; }
+
 	}
 
-	void authRespCallback(String inString) {
-		response = inString;
-	}
 
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
 	FreesoundAuthorization authorization;
 
-	String response;
+	String accToken;
+	bool authFlag = false;
+	bool hasAudio = false;
 
 	ImageButton freesoundLogo;
 
