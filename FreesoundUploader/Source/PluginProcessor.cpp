@@ -30,7 +30,7 @@ FreesoundUploaderAudioProcessor::FreesoundUploaderAudioProcessor()
 
 FreesoundUploaderAudioProcessor::~FreesoundUploaderAudioProcessor()
 {
-	readerSource.release();
+	readerSource->releaseResources();
 }
 
 //==============================================================================
@@ -210,7 +210,7 @@ int FreesoundUploaderAudioProcessor::audioDropped(File droppedAudio)
 	File file(droppedAudio);
 	if (auto* reader = formatManager.createReaderFor(file))
 	{
-		std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+		std::unique_ptr<AudioFormatReaderSource> newSource (new AudioFormatReaderSource(reader, true));
 		transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
 		readerSource.reset(newSource.release());
 		return (1);
