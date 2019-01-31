@@ -27,8 +27,9 @@
 typedef std::pair<int, String> Response;
 typedef std::function<void()> AuthorizationCallback;
 typedef std::function<void(Response)> ResponseCallback;
+typedef std::function<void(int)> ProgressCallback;
 
-class FreesoundRequest : private Thread
+class FreesoundRequest : public Thread
 {
 public:
 	FreesoundRequest(URL url, String POSTData, String inAccessToken)
@@ -36,24 +37,32 @@ public:
 		requestedCall(url),
 		POST(POSTData),
 		accessToken(inAccessToken),
-		logger(String("F:\FSRequest.txt"), String())
+		logger(String(), String())
 	{
 	}
 
-	~FreesoundRequest() {}
+	~FreesoundRequest() {
+		stopThread(100);
+	}
 
 	void run() override
 	{
-		Response result = makeRequest();
+		Response result;
+		if (progressCallBack == nullptr) { result = makeRequest(); }
+		else { result = makeRequestProgress(); }
+		if (callBack != nullptr) { 
+			MessageManagerLock mml(this);
+			if (mml.lockWasGained())
+				callBack(result);
+			
+			 }
 
-		if (callBack != nullptr) { callBack(result); }
-
-		stopThread(100);
 
 	}
 
 
 
+	void setProgressCallback(ProgressCallback cb) { progressCallBack = cb; }
 	void setResponseCallback(ResponseCallback cb) { callBack = cb; }
 
 	Response makeRequest()
@@ -85,6 +94,45 @@ public:
 		return Response(-1, String());
 	}
 
+	Response makeRequestProgress()
+	{
+		StringPairArray responseHeaders;
+		int statusCode = 0;
+
+		requestedCall = requestedCall.withPOSTData(POST);
+		String headers;
+		if (accessToken.isNotEmpty()) { headers = "Authorization: Bearer " + accessToken; }
+
+		logger.writeToLog("Response Headers: " + headers);
+		logger.writeToLog("url = " + requestedCall.toString(true));
+
+		//URL::OpenStreamProgressCallback* callback = insideProgress;
+		if (auto stream = std::unique_ptr<InputStream>(requestedCall.createInputStream(true, nullptr, nullptr, headers,
+			10000, // timeout in millisecs
+			&responseHeaders, &statusCode)))
+		{
+			String resp = stream->readEntireStreamAsString();
+			logger.writeToLog((statusCode != 0 ? "Status code: " + String(statusCode) + newLine : String())
+				+ "Response headers: " + newLine
+				+ responseHeaders.getDescription() + newLine
+				+ "----------------------------------------------------" + newLine
+				+ resp);
+			return Response(statusCode, resp);
+		}
+
+		return Response(-1, String());
+	}
+
+	//THIS FUNCTION IS NOT WORKING
+	bool static insideProgress(void* context, int bytesSent, int totalBytes) {
+
+		int progress = (bytesSent / totalBytes) * 100;
+		
+		static_cast<FreesoundRequest*>(context)->progressCallBack(progress);
+
+		return true;
+	}
+
 
 private:
 
@@ -93,6 +141,8 @@ private:
 	URL requestedCall;
 	String POST;
 	ResponseCallback callBack;
+	ProgressCallback progressCallBack;
+
 	String accessToken;
 	FileLogger logger;
 

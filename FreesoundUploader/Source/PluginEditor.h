@@ -202,6 +202,17 @@ public:
 private:
 
 	void checkIfReadyForUpload() {
+
+		String statusText = String();
+		if (authFlag) { statusText += "You are logged in"; }
+		if (!authFlag) { statusText += "Log in by pressing the Freesound logo"; }
+		if (tagsText.isEmpty() || nameText.isEmpty() || descriptionText.isEmpty()) { statusText += ", set descriptions"; }
+		else { statusText += ", descriptions are set"; }
+		if (playButton.isEnabled()) { statusText += " and audio is loaded!"; }
+		else { statusText += " and drop audio"; }
+
+		status.setText(statusText, dontSendNotification);
+
 		if (playButton.isEnabled() && //if File is dropped
 			!tagsText.isEmpty() &&
 			!nameText.isEmpty() &&
@@ -309,12 +320,15 @@ private:
 	
 	void uploadButtonClicked() {
 		
-		//Fazer set dos parameters usando a funçao
+		//Fazer set dos parameters usando a funÃ§ao
+		uploadButton.setEnabled(false);
 
-		String license;
-		if (cc0Button.getToggleState()) { license = "Creative Commons 0"; }
-		if (attribNCButton.getToggleState()) { license = "Attribution Noncommercial"; }
-		if (attribButton.getToggleState()) { license = "Attribution"; }
+		status.setText("Uploading...",dontSendNotification);
+
+		String selLicense;
+		if (cc0Button.getToggleState()) { selLicense = "Creative Commons 0"; }
+		if (attribNCButton.getToggleState()) { selLicense = "Attribution Noncommercial"; }
+		if (attribButton.getToggleState()) { selLicense = "Attribution"; }
 		
 		URL url = "https://freesound.org/apiv2/sounds/upload/";
 
@@ -323,21 +337,42 @@ private:
 		url = url.withParameter("name", nameText.getText());
 		url = url.withParameter("tags", tagsText.getText());
 		url = url.withParameter("description", descriptionText.getText());
-		url = url.withParameter("license", license);
+		url = url.withParameter("license", selLicense);
 
 		
 		url = url.withFileToUpload("audiofile", droppedFile, "audio/*");
 
 
-
-		FreesoundRequest uploadSound(url, String(), authorization.getAccessToken());
-
+		uploadSound.reset(new FreesoundRequest(url, String(), authorization.getAccessToken()));
+/*
 		Response incoming = uploadSound.makeRequest();
 		if (incoming.first >= 200 && incoming.first < 300) {
 			var answer = JSON::fromString(incoming.second);
 			uploadButton.setColour(TextButton::buttonColourId, Colours::green);
 		}
+*/
+		uploadSound->setResponseCallback([this] (Response inResponse) {getResponse(inResponse); });
+		//uploadSound->setProgressCallback([this] (int progress) {progressCallback(progress); });
+		uploadSound->startThread();
+
 		return;
+	}
+
+	void progressCallback(int progress) {
+		uploadButton.setButtonText("Upload (" + String(progress) + "%)");
+	}
+
+	void getResponse(Response inResponse) {
+		response = inResponse;
+		if (response.first >= 200 && response.first < 300) {
+			uploadButton.setEnabled(true);
+		}
+
+		var answer = JSON::fromString(response.second);
+		
+			
+		status.setText(answer["detail"],dontSendNotification);
+
 	}
 
 	void freesoundButtonClicked() {
@@ -363,6 +398,7 @@ private:
 
 		int statusCode = authorization.codeExchange();
 		if (statusCode == 200) { authFlag = true; }
+		checkIfReadyForUpload();
 
 	}
 
@@ -371,6 +407,8 @@ private:
 	// access the processor object that created it.
 	FreesoundUploaderAudioProcessor& processor;
 	FreesoundAuthorization authorization;
+	std::unique_ptr<FreesoundRequest> uploadSound;
+	Response response;
 
 	bool authFlag = false;
 	bool hasAudio = false;
@@ -389,6 +427,7 @@ private:
 	TextEditor nameText;
 	TextEditor tagsText;
 	TextEditor descriptionText;
+	Label status;
 
 
 

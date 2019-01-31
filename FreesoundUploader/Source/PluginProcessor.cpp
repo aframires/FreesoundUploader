@@ -84,15 +84,19 @@ int FreesoundUploaderAudioProcessor::getCurrentProgram()
 
 void FreesoundUploaderAudioProcessor::setCurrentProgram (int index)
 {
+	index;
 }
 
 const String FreesoundUploaderAudioProcessor::getProgramName (int index)
 {
+	index;
     return {};
 }
 
 void FreesoundUploaderAudioProcessor::changeProgramName (int index, const String& newName)
 {
+	newName;
+	index;
 }
 
 //==============================================================================
@@ -138,10 +142,10 @@ bool FreesoundUploaderAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 
 void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
+	midiMessages;
 	int totalNumInputChannels = 0;
 	if (readerSource.get() != nullptr) { totalNumInputChannels = 2; }
     
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
 	transportSource.getNextAudioBlock(AudioSourceChannelInfo(buffer));
 
 
@@ -169,13 +173,7 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
 		}
 
 
-        auto* channelData = buffer.getWritePointer (channel);
 
-		//COPY THE BUFFER HERE
-		//channelData = transportSource.buffer
-
-		//transportSource.getNextReadPosition
-		//buffer.copyFrom()
 	}
 }
 
@@ -193,6 +191,7 @@ AudioProcessorEditor* FreesoundUploaderAudioProcessor::createEditor()
 //==============================================================================
 void FreesoundUploaderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
+	destData;
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
@@ -200,6 +199,8 @@ void FreesoundUploaderAudioProcessor::getStateInformation (MemoryBlock& destData
 
 void FreesoundUploaderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
+	sizeInBytes;
+	data;
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
@@ -207,7 +208,6 @@ void FreesoundUploaderAudioProcessor::setStateInformation (const void* data, int
 int FreesoundUploaderAudioProcessor::audioDropped(File droppedAudio)
 {
 	File file(droppedAudio);
-	auto* reader = formatManager.createReaderFor(file);
 	if (auto* reader = formatManager.createReaderFor(file))
 	{
 		std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));

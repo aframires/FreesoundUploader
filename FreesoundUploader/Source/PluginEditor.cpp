@@ -18,7 +18,8 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	thumbnailCache(5),
 	thumbnailComp(512, processor.formatManager, thumbnailCache),
 	positionOverlay(processor.transportSource),
-	authorization("qtRxJcdBeEqAPPymT71w","xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC")
+	authorization("qtRxJcdBeEqAPPymT71w","xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC"),
+	uploadSound(nullptr)
 {
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("Play");
@@ -93,7 +94,7 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	tagsText.setCaretVisible(true);
 	tagsText.setPopupMenuEnabled(true);
 	tagsText.setFont(Font(17.0f, Font::plain).withTypefaceStyle("Regular"));
-	tagsText.setTextToShowWhenEmpty("Tags",Colour(Colours::whitesmoke));
+	tagsText.setTextToShowWhenEmpty("Tags (at least 3!)",Colour(Colours::whitesmoke));
 	tagsText.onTextChange = [this] {checkIfReadyForUpload(); };
 
 
@@ -108,6 +109,10 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	descriptionText.setTextToShowWhenEmpty("Description of the Sound", Colour(Colours::whitesmoke));
 	descriptionText.onTextChange = [this] {checkIfReadyForUpload(); };
 
+	addAndMakeVisible(&status);
+	status.setText("Login by pressing the Freesound logo, set descriptions and drop audio",dontSendNotification);
+	status.setJustificationType(Justification::centred);
+
 
 
 	positionOverlay.setOnDropCallback([this](File inputFile) {fileDropped(inputFile); checkIfReadyForUpload(); });
@@ -116,7 +121,7 @@ FreesoundUploaderAudioProcessorEditor::FreesoundUploaderAudioProcessorEditor(Fre
 	addAndMakeVisible(&thumbnailComp);
 	addAndMakeVisible(&positionOverlay);
 
-	setSize(600, 600);
+	setSize(600, 620);
 	processor.transportSource.addChangeListener(this);
 
 
@@ -144,23 +149,24 @@ void FreesoundUploaderAudioProcessorEditor::resized()
 	stopButton.setBounds(205, 570, getWidth()/3 - 10, 20);
 	uploadButton.setBounds(400, 570, getWidth() / 3 - 10, 20);
 
-	license.setBounds(6, getHeight() / 2 + 58, getWidth() / 4 - 10, 20);
-	cc0Button.setBounds(85, getHeight() / 2 + 60, getWidth() / 4 + 15, 20);
+	license.setBounds(6, 600 / 2 + 58, getWidth() / 4 - 10, 20);
+	cc0Button.setBounds(85, 600 / 2 + 60, getWidth() / 4 + 15, 20);
 	cc0Button.setConnectedEdges(Button::ConnectedOnRight);
-	attribButton.setBounds(85 + getWidth() / 4 + 15, getHeight() / 2 + 60, getWidth() / 4 + 15, 20);
+	attribButton.setBounds(85 + getWidth() / 4 + 15, 600 / 2 + 60, getWidth() / 4 + 15, 20);
 	attribButton.setConnectedEdges(Button::ConnectedOnLeft + Button::ConnectedOnRight);
-	attribNCButton.setBounds(85 + 2 * (getWidth() / 4 + 15), getHeight() / 2 + 60, getWidth() / 4 + 15, 20);
+	attribNCButton.setBounds(85 + 2 * (getWidth() / 4 + 15), 600 / 2 + 60, getWidth() / 4 + 15, 20);
 	attribNCButton.setConnectedEdges(Button::ConnectedOnLeft);
 
-	descriptionText.setBounds(10, 200, getWidth() - 20, getHeight() / 4);
+	descriptionText.setBounds(10, 200, getWidth() - 20, 600 / 4);
 
 	tagsText.setBounds(10, 150, getWidth() - 20, 40);
 	
 	nameText.setBounds(10, 105, getWidth() - 20, 35);
 
 	freesoundLogo.setBounds(10 + getWidth() / 2 - 158, 5, getWidth() / 2, 100);
+	status.setBounds(10, 595, getWidth() - 20, 20);
 
-	Rectangle<int> thumbnailBounds(10, getHeight()/2 + 90, getWidth() - 20, getHeight()/2 - 130);
+	Rectangle<int> thumbnailBounds(10, 600/2 + 90, getWidth() - 20, 600/2 - 130);
 	thumbnailComp.setBounds(thumbnailBounds);
 	positionOverlay.setBounds(thumbnailBounds);
 }
