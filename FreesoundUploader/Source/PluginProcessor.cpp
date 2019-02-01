@@ -24,12 +24,13 @@ FreesoundUploaderAudioProcessor::FreesoundUploaderAudioProcessor()
                        )
 #endif
 {
-
+	//Allows the formatManager to understand the allowed filetipes
 	formatManager.registerBasicFormats();
 }
 
 FreesoundUploaderAudioProcessor::~FreesoundUploaderAudioProcessor()
 {
+	//Delete the reader source
 	readerSource->releaseResources();
 }
 
@@ -145,25 +146,9 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
 	midiMessages;
 	int totalNumInputChannels = 0;
 	if (readerSource.get() != nullptr) { totalNumInputChannels = 2; }
-    
+    //Get the next audioblock from the transportSource
 	transportSource.getNextAudioBlock(AudioSourceChannelInfo(buffer));
 
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    //for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-    //  buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
 		if (readerSource.get() == nullptr)
@@ -171,9 +156,6 @@ void FreesoundUploaderAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
 			buffer.clear(channel, 0, buffer.getNumSamples());
 			return;
 		}
-
-
-
 	}
 }
 
@@ -205,6 +187,7 @@ void FreesoundUploaderAudioProcessor::setStateInformation (const void* data, int
     // whose contents will have been created by the getStateInformation() call.
 }
 
+//When new audio is dropped, this sets the file to the transportSource
 int FreesoundUploaderAudioProcessor::audioDropped(File droppedAudio)
 {
 	File file(droppedAudio);
