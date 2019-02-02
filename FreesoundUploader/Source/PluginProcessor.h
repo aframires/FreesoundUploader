@@ -60,6 +60,7 @@ public:
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
 	AudioTransportSource transportSource;
 	bool hasTransportSource;
+	FileLogger logger;
 
 
 

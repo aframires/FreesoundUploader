@@ -238,7 +238,8 @@ public:
 		thumbnailComp(512, processor.formatManager, thumbnailCache),
 		positionOverlay(processor.transportSource),
 		authorization("qtRxJcdBeEqAPPymT71w", "xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC"),
-		uploadSound(nullptr)
+		uploadSound(nullptr),
+		logger(File(FileLogger::getSystemLogFileFolder().getFullPathName() + File::getSeparatorChar() + "FSUPPElog.txt"), "Freesound Uploader log file, PE:\n")
 	{
 
 		//These functions are related to the UI components:
@@ -469,6 +470,7 @@ private:
 	//Function called whenever the state of the transport source is changed
 	void changeState(TransportState newState)
 	{
+		logger.logMessage("changeState to " + String(newState));
 		if (state != newState)
 		{
 			state = newState;
@@ -514,6 +516,8 @@ private:
 	//Function called when the transportSource changes
 	void transportSourceChanged()
 	{
+
+		logger.logMessage("transportSourceChanged");
 		if (processor.transportSource.isPlaying())
 			changeState(Playing);
 		else
@@ -523,6 +527,7 @@ private:
 	//Function called when the playButton is clicked
 	void playButtonClicked()
 	{
+		logger.logMessage("PlayButtonClicked");
 		if ((state == Stopped) || (state == Paused))
 			changeState(Starting);
 		else if (state == Playing)
@@ -532,6 +537,7 @@ private:
 	//Function called when the stopButton is clicked
 	void stopButtonClicked()
 	{
+		logger.logMessage("StopButton clicked");
 		if (state == Paused)
 			changeState(Stopped);
 		else
@@ -541,6 +547,7 @@ private:
 	//Function called by FileDropped() when new audio is dropped
 	void audioDropped()
 	{
+		logger.logMessage("AudioDropped");
 		int result = processor.audioDropped(droppedFile);
 		if (result == 1) 
 		{
@@ -556,6 +563,8 @@ private:
 	
 	//Whenever the upload button is clicked,
 	void uploadButtonClicked() {
+
+		logger.logMessage("UploadButton clicked");
 		//Disable the button so the user cannot create a new request
 		uploadButton.setEnabled(false);
 		//Change the status
@@ -597,16 +606,21 @@ private:
 		//If everything went well,
 		if (response.first >= 200 && response.first < 300) {
 			uploadButton.setEnabled(true);
+			var answer = JSON::fromString(response.second);
+			//Put the response text in the status label.
+			status.setText(answer["detail"], dontSendNotification);
+			logger.logMessage("UploadSuccessfull");
 		}
-
-		var answer = JSON::fromString(response.second);
-		//Put the response text in the status label.
-		status.setText(answer["detail"],dontSendNotification);
+		else {
+			logger.logMessage("UploadNotSuccessfull");
+			//Should handle possible errors here!!!!!!!!!!!!!!!!!!!!!
+		}
 
 	}
 
 	//Function called when the FS button is clicked
 	void freesoundButtonClicked() {
+		logger.logMessage("login started button");
 		//Set the size of the component to fill all the window
 		authorization.setBounds(getLocalBounds());
 		//Start the login proccess
@@ -618,6 +632,7 @@ private:
 	}
 
 	void authFinished() {
+		logger.logMessage("authFinished");
 		//When the authorisation first step has finished,
 		authorization.setVisible(false);
 		//Exchange the authorizationCode for a authorizationToken
@@ -632,6 +647,7 @@ private:
 	FreesoundAuthorization authorization;
 	std::unique_ptr<FreesoundRequest> uploadSound;
 	Response response;
+	FileLogger logger;
 
 	bool authFlag = false;
 	bool hasAudio = false;

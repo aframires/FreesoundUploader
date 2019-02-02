@@ -14,14 +14,16 @@
 //==============================================================================
 FreesoundUploaderAudioProcessor::FreesoundUploaderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+     : AudioProcessor (	BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  AudioChannelSet::stereo(), true)
                       #endif
                        .withOutput ("Output", AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+						logger(File(FileLogger::getSystemLogFileFolder().getFullPathName() + File::getSeparatorChar() + "FSUPAPlog.txt"), "Freesound Uploader log file, FSR:\n")
+
 #endif
 {
 	//Allows the formatManager to understand the allowed filetipes
@@ -105,6 +107,7 @@ void FreesoundUploaderAudioProcessor::prepareToPlay (double sampleRate, int samp
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+	logger.logMessage("Prepare to play");
 	transportSource.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
@@ -124,10 +127,11 @@ bool FreesoundUploaderAudioProcessor::isBusesLayoutSupported (const BusesLayout&
   #else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
-    if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
-        return false;
-
+	if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
+		&& layouts.getMainOutputChannelSet() != AudioChannelSet::stereo()){
+	//		logger.logMessage("OutputChannels not mono or stereo");
+			return false;
+	}
     // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
@@ -190,12 +194,15 @@ void FreesoundUploaderAudioProcessor::setStateInformation (const void* data, int
 //When new audio is dropped, this sets the file to the transportSource
 int FreesoundUploaderAudioProcessor::audioDropped(File droppedAudio)
 {
+	logger.logMessage("AudioDropped: " + droppedAudio.getFullPathName());
 	File file(droppedAudio);
 	if (auto* reader = formatManager.createReaderFor(file))
 	{
 		std::unique_ptr<AudioFormatReaderSource> newSource (new AudioFormatReaderSource(reader, true));
 		transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
 		readerSource.reset(newSource.release());
+		logger.logMessage("Audio loaded");
+
 		return (1);
 	}
 	else { return(0); }
