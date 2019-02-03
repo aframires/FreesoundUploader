@@ -6,7 +6,7 @@ A JUCE based plugin and audio application for uploading sounds to Freesound.org 
 Usage
 -------
 
-![Alt text](freesoundUploaderUI.jpg?raw=true "User interface of the Freesound Uploader")
+![Freesound Uploader UI](FreesoundUploader/freesoundUploaderUI.JPG?raw=true "User interface of the Freesound Uploader")
 
 
 To use this application, the user should execute it either as a standalone application or as a plugin in a Digital Audio Workstation. Then, the following steps should be performed:
