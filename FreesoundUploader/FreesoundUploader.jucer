@@ -2,7 +2,8 @@
 
 <JUCERPROJECT id="JeqAGw" name="FreesoundUploader" projectType="audioplug"
               jucerVersion="5.4.1" companyName="MTG-UPF" pluginFormats="buildStandalone,buildVST,buildVST3"
-              pluginVST3Category="Instrument">
+              pluginVST3Category="Instrument" companyWebsite="https://www.upf.edu/web/mtg"
+              companyEmail="antonio.ramires@upf.edu">
   <MAINGROUP id="K1oVh7" name="FreesoundUploader">
     <FILE id="hCx6Te" name="Freesound_project_website_logo.png" compile="0"
           resource="1" file="Freesound_project_website_logo.png"/>
