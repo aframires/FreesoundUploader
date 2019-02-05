@@ -604,8 +604,11 @@ private:
 			logger.logMessage("UploadSuccessfull");
 		}
 		else {
+			uploadButton.setEnabled(true);
+			var answer = JSON::fromString(response.second);
+			//status.setText(response.second, dontSendNotification);
+			status.setText("Upload failed: " + response.second.fromFirstOccurrenceOf("[\"",false,true).removeCharacters("\"]}"), dontSendNotification);
 			logger.logMessage("UploadNotSuccessfull");
-			//Should handle possible errors here!!!!!!!!!!!!!!!!!!!!!
 		}
 
 	}
