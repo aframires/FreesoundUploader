@@ -1,17 +1,9 @@
-/*
-  ==============================================================================
 
-	This file was auto-generated!
-
-	It contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
 
 /*
   ==============================================================================
 
-   This file is part of the JUCE tutorials.
+   This file contains parts from the JUCE tutorials.
    Copyright (c) 2017 - ROLI Ltd.
 
    The code included in this file is provided under the terms of the ISC license
@@ -554,7 +546,7 @@ private:
 			hasAudio = true;
 			thumbnailComp.setFile(droppedFile);
 			playButton.setEnabled(true);
-
+			changeState(Stopped);
 
 		}
 		else {} //In case the processor could not create the readstream
