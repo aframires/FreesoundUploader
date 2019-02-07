@@ -222,7 +222,7 @@ public:
 
 	int codeExchange() {
 		logger.logMessage("Started Code Exchange");
-		URL url = "https://freesound.org/apiv2/oauth2/access_token/";
+		URL url = URL("https://freesound.org/apiv2/oauth2/access_token/");
 		String post = "client_id=" + getClientID() + "&client_secret=" + getClientSecret() + "&grant_type=authorization_code&code=" + getAuthCode();
 		FreesoundRequest askToken(url, post, String());
 
