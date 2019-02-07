@@ -630,6 +630,7 @@ private:
 		logger.logMessage("authFinished");
 		//When the authorisation first step has finished,
 		authorization.setVisible(false);
+		authorization.setBounds(0, 0, 1, 1);
 		//Exchange the authorizationCode for a authorizationToken
 		int statusCode = authorization.codeExchange();
 		//If everything went well set the app to authenticated
