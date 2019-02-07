@@ -568,7 +568,7 @@ private:
 		if (attribButton.getToggleState()) { selLicense = "Attribution"; }
 		
 		//Create the URL and add the POST parameters (doing it like this is better than adding POST data in the FreesoundRequest
-		URL url = "https://freesound.org/apiv2/sounds/upload/";		
+		URL url = URL("https://freesound.org/apiv2/sounds/upload/");		
 		url = url.withParameter("name", nameText.getText());
 		url = url.withParameter("tags", tagsText.getText());
 		url = url.withParameter("description", descriptionText.getText());
