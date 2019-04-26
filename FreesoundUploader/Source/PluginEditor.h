@@ -272,6 +272,13 @@ public:
 		license.setEditable(false, false, false);
 		license.setColour(TextEditor::backgroundColourId, Colour(0x00000000));
 
+		cc0Button.setTooltip("This license lets others copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.");
+		attribButton.setTooltip("This license lets others distribute, remix, tweak, and build upon your work, even commercially, as long as they credit you for the original creation.");
+		attribNCButton.setTooltip("This license lets others remix, tweak, and build upon your work non-commercially, and although their new works must also acknowledge you and be non-commercial, they don't have to license their derivative works on the same terms.");
+
+
+
+
 		addAndMakeVisible(&cc0Button);
 		cc0Button.setButtonText("CC0");
 		cc0Button.setClickingTogglesState(true);
@@ -280,12 +287,12 @@ public:
 
 
 		addAndMakeVisible(&attribNCButton);
-		attribNCButton.setButtonText("Attribution Non Commercial");
+		attribNCButton.setButtonText("CC BY-NC");
 		attribNCButton.setClickingTogglesState(true);
 		attribNCButton.setRadioGroupId(12345);
 
 		addAndMakeVisible(&attribButton);
-		attribButton.setButtonText("Attribution");
+		attribButton.setButtonText("CC BY");
 		attribButton.setClickingTogglesState(true);
 		attribButton.setRadioGroupId(12345);
 
@@ -663,6 +670,7 @@ private:
 	TextEditor tagsText;
 	TextEditor descriptionText;
 	Label status;
+	SharedResourcePointer<TooltipWindow> tipWindow;
 
 
 
