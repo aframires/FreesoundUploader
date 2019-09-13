@@ -407,7 +407,7 @@
  #define JucePlugin_AUManufacturerCode     JucePlugin_ManufacturerCode
 #endif
 #ifndef  JucePlugin_CFBundleIdentifier
- #define JucePlugin_CFBundleIdentifier     com.MTG-UPF.FreesoundUploader
+ #define JucePlugin_CFBundleIdentifier     com.MTGUPF.FreesoundUploader
 #endif
 #ifndef  JucePlugin_RTASCategory
  #define JucePlugin_RTASCategory           0
@@ -425,7 +425,7 @@
  #define JucePlugin_RTASDisableMultiMono   0
 #endif
 #ifndef  JucePlugin_AAXIdentifier
- #define JucePlugin_AAXIdentifier          com.MTG-UPF.FreesoundUploader
+ #define JucePlugin_AAXIdentifier          com.MTGUPF.FreesoundUploader
 #endif
 #ifndef  JucePlugin_AAXManufacturerCode
  #define JucePlugin_AAXManufacturerCode    JucePlugin_ManufacturerCode
@@ -450,6 +450,12 @@
 #endif
 #ifndef  JucePlugin_IAAName
  #define JucePlugin_IAAName                "MTG-UPF: FreesoundUploader"
+#endif
+#ifndef  JucePlugin_VSTNumMidiInputs
+ #define JucePlugin_VSTNumMidiInputs       16
+#endif
+#ifndef  JucePlugin_VSTNumMidiOutputs
+ #define JucePlugin_VSTNumMidiOutputs      16
 #endif
 
 //==============================================================================

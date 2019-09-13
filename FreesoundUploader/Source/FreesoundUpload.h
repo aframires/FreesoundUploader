@@ -186,7 +186,7 @@ public:
 	}
 
 	void startLogin() {
-		String loginURL = "https://freesound.org/apiv2/oauth2/authorize/?client_id=" + clientID + "&response_type=code";
+		String loginURL = "https://freesound.org/apiv2/oauth2/logout_and_authorize/?client_id=" + clientID + "&response_type=code";
 		goToURL(loginURL);
 	}
 

@@ -33,7 +33,8 @@ FreesoundUploaderAudioProcessor::FreesoundUploaderAudioProcessor()
 FreesoundUploaderAudioProcessor::~FreesoundUploaderAudioProcessor()
 {
 	//Delete the reader source
-	readerSource->releaseResources();
+	if(readerSource != nullptr) 
+		readerSource->releaseResources();
 }
 
 //==============================================================================
