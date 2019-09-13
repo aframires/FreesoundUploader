@@ -1,0 +1,3 @@
+[submodule "FreesoundUploader/freesound-juce"]
+	path = FreesoundUploader/freesound-juce
+	url = git@github.com:MTG/freesound-juce.git
