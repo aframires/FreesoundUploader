@@ -22,8 +22,9 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "FreesoundAPI.h"
 #include "PluginProcessor.h"
-#include "FreesoundUpload.h"
+
 
 //==============================================================================
 
@@ -230,7 +231,6 @@ public:
 		thumbnailComp(512, processor.formatManager, thumbnailCache),
 		positionOverlay(processor.transportSource),
 		authorization("qtRxJcdBeEqAPPymT71w", "xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC"),
-		uploadSound(nullptr),
 		logger(File(FileLogger::getSystemLogFileFolder().getFullPathName() + File::getSeparatorChar() + "FSUPPElog.txt"), "Freesound Uploader log file, PE:\n")
 	{
 
@@ -340,7 +340,7 @@ public:
 
 		//Set callbacks
 		positionOverlay.setOnDropCallback([this](File inputFile) {fileDropped(inputFile); checkIfReadyForUpload(); });
-		authorization.setAuthCallback([this] {authFinished(); });
+		authorization.setCallback([this] {authFinished(); });
 
 		//Make the thumbnail and position components visible
 		addAndMakeVisible(&thumbnailComp);
@@ -445,8 +445,8 @@ private:
 	void checkIfReadyForUpload() {
 
 		String statusText = String();
-		if (authFlag) { statusText += "You are logged in"; }
-		if (!authFlag) { statusText += "Log in by pressing the Freesound logo"; }
+		if (authorization.accessToken.isNotEmpty()) { statusText += "You are logged in"; }
+		else { statusText += "Log in by pressing the Freesound logo"; }
 		if (tagsText.isEmpty() || nameText.isEmpty() || descriptionText.isEmpty()) { statusText += ", set descriptions"; }
 		else { statusText += ", descriptions are set"; }
 		if (playButton.isEnabled()) { statusText += " and audio is loaded!"; }
@@ -458,7 +458,7 @@ private:
 			!tagsText.isEmpty() &&
 			!nameText.isEmpty() &&
 			!descriptionText.isEmpty() &&
-			authFlag) 
+			authorization.accessToken.isNotEmpty())
 		{
 			uploadButton.setEnabled(true);
 		}
@@ -573,23 +573,12 @@ private:
 		if (cc0Button.getToggleState()) { selLicense = "Creative Commons 0"; }
 		if (attribNCButton.getToggleState()) { selLicense = "Attribution Noncommercial"; }
 		if (attribButton.getToggleState()) { selLicense = "Attribution"; }
-		
-		//Create the URL and add the POST parameters (doing it like this is better than adding POST data in the FreesoundRequest
-		URL url = URL("https://freesound.org/apiv2/sounds/upload/");		
-		url = url.withParameter("name", nameText.getText());
-		url = url.withParameter("tags", tagsText.getText());
-		url = url.withParameter("description", descriptionText.getText());
-		url = url.withParameter("license", selLicense);
-		//Add the file to upload
-		url = url.withFileToUpload("audiofile", droppedFile, "audio/*");
-		//Store the FreesoundRequest objecto so that the pointer is not destroyed while the thread is still running
-		uploadSound.reset(new FreesoundRequest(url, String(), authorization.getAccessToken()));
-		//Set the responseCallback
-		uploadSound->setResponseCallback([this] (Response inResponse) {getResponse(inResponse); });
-		//And ask the object to run assynchronously
-		uploadSound->startThread();
 
-		return;
+		int result = authorization.uploadSound(droppedFile, tagsText.getText(), descriptionText.getText(), nameText.getText(), selLicense);
+		
+
+		getResponse(result);
+
 	}
 
 	//Progress callback which is not supported atm
@@ -598,23 +587,20 @@ private:
 	}
 
 	//Callback function called whenever the upload proccess has finished running
-	void getResponse(Response inResponse) {
+	void getResponse(int response) {
 
-		//Get the response
-		response = inResponse;
+		
 		//If everything went well,
-		if (response.first >= 200 && response.first < 300) {
+		if (response >= 200 && response < 300) {
 			uploadButton.setEnabled(true);
-			var answer = JSON::fromString(response.second);
 			//Put the response text in the status label.
-			status.setText(answer["detail"], dontSendNotification);
+			status.setText("Upload Successfull!",dontSendNotification);
 			logger.logMessage("UploadSuccessfull");
 		}
 		else {
 			uploadButton.setEnabled(true);
-			var answer = JSON::fromString(response.second);
 			//status.setText(response.second, dontSendNotification);
-			status.setText("Upload failed: " + response.second.fromFirstOccurrenceOf("[\"",false,true).removeCharacters("\"]}"), dontSendNotification);
+			status.setText("Upload failed", dontSendNotification);
 			logger.logMessage("UploadNotSuccessfull");
 		}
 
@@ -626,7 +612,7 @@ private:
 		//Set the size of the component to fill all the window
 		authorization.setBounds(getLocalBounds());
 		//Start the login proccess
-		authorization.startLogin();
+		authorization.startAuthentication(1);
 		//Make the component visible
 		addAndMakeVisible(authorization);
 
@@ -639,20 +625,17 @@ private:
 		authorization.setVisible(false);
 		authorization.setBounds(0, 0, 1, 1);
 		//Exchange the authorizationCode for a authorizationToken
-		int statusCode = authorization.codeExchange();
+		authorization.exchangeToken();
 		//If everything went well set the app to authenticated
-		if (statusCode == 200) { authFlag = true; }
 		checkIfReadyForUpload();
 
 	}
 
 	FreesoundUploaderAudioProcessor& processor;
-	FreesoundAuthorization authorization;
-	std::unique_ptr<FreesoundRequest> uploadSound;
+	FreesoundClientComponent authorization;
 	Response response;
 	FileLogger logger;
 
-	bool authFlag = false;
 	bool hasAudio = false;
 
 	ImageButton freesoundLogo;

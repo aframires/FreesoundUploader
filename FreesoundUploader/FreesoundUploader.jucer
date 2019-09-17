@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="JeqAGw" name="FreesoundUploader" projectType="audioplug"
-              jucerVersion="5.4.3" companyName="MTG-UPF" pluginFormats="buildStandalone,buildVST,buildVST3"
-              pluginVST3Category="Instrument" companyWebsite="https://www.upf.edu/web/mtg"
-              companyEmail="antonio.ramires@upf.edu">
+              jucerVersion="5.4.4" companyName="Music Technology Group" pluginFormats="buildStandalone,buildVST,buildVST3"
+              pluginVST3Category="Instrument" companyWebsite="https://mtg.upf.edu">
   <MAINGROUP id="K1oVh7" name="FreesoundUploader">
     <FILE id="hCx6Te" name="Freesound_project_website_logo.png" compile="0"
           resource="1" file="Freesound_project_website_logo.png"/>
     <GROUP id="{75A4A9ED-1E8D-D73F-8F59-60CDB1C12EFD}" name="Source">
-      <FILE id="G07ane" name="FreesoundUpload.h" compile="0" resource="0"
-            file="Source/FreesoundUpload.h"/>
+      <FILE id="We95KD" name="FreesoundAPI.cpp" compile="1" resource="0"
+            file="Source/FreesoundAPI.cpp"/>
+      <FILE id="VCgn14" name="FreesoundAPI.h" compile="0" resource="0" file="Source/FreesoundAPI.h"/>
       <FILE id="us9dvF" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="El8kiu" name="PluginProcessor.h" compile="0" resource="0"
