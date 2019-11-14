@@ -24,6 +24,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "FreesoundAPI.h"
 #include "PluginProcessor.h"
+#include "FreesoundKeys.h"
 
 
 //==============================================================================
@@ -230,7 +231,7 @@ public:
 		thumbnailCache(5),
 		thumbnailComp(512, processor.formatManager, thumbnailCache),
 		positionOverlay(processor.transportSource),
-		authorization("qtRxJcdBeEqAPPymT71w", "xlMDWbwEp65jNneniFiwNe3u7aKyxBPKrxug05KC"),
+		authorization(FREESOUND_CLIENT_ID, FREESOUND_API_KEY),
 		logger(File(FileLogger::getSystemLogFileFolder().getFullPathName() + File::getSeparatorChar() + "FSUPPElog.txt"), "Freesound Uploader log file, PE:\n")
 	{
 
