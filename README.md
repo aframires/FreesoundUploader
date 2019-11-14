@@ -28,6 +28,7 @@ Installation
 
 In order to install Freesound Uploader, the JUCE framework should be downloaded, installed and setup. A tutorial on how to do this is available in https://docs.juce.com/master/tutorial_new_projucer_project.html
 Firstly, the "Getting Started" section should be performed. Then, the FreesoundUploader.juce file should be opened with the projucer.
+Before building it you should edit the file `FreesoundUploader/Source/FreesoundKeys.h`, request a Freesound API key and add it to that file.
 The final step is setting up the desired plugin export formats in the Projucer project settings and, finally you should open this project on the desired Juce exporter and build the solution.
 In case a VST2 build of the plugin is desired, a VST2 SDK should be provided and linked in the Projucer global paths.
 
